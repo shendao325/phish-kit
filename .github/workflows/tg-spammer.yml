@@ -1,0 +1,45 @@
+name: Telegram Auto Spammer
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # 每 30 分钟检查一次，脚本内部控制发帖频率
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/tg_spammer.py'
+
+jobs:
+  run-spammer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install telethon aiohttp
+
+      - name: Run TG Spammer
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_PHONE: ${{ secrets.TG_PHONE }}
+        run: |
+          cd scripts
+          timeout 1200 python tg_spammer.py || true
+
+      - name: Upload session (if new)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tg-session
+          path: scripts/phish_spammer.session
+          retention-days: 30
