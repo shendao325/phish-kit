@@ -1,0 +1,69 @@
+name: Auto Monetize Engine (Every 5 minutes)
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # 每 5 分钟
+  workflow_dispatch:
+
+jobs:
+  monetize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install aiohttp
+
+      - name: Run Auto Monetize (single iteration)
+        env:
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
+          FAKA_API_URL: ${{ secrets.FAKA_API_URL }}
+          FAKA_API_KEY: ${{ secrets.FAKA_API_KEY }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          cd scripts
+          timeout 180 python -c "
+import asyncio, sys
+sys.path.insert(0, '.')
+from auto_monetize import AutoMonetizer
+
+async def single_run():
+    async with AutoMonetizer() as m:
+        await m.run_once()
+
+asyncio.run(single_run())
+" || true
+
+      - name: Upload processed IDs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: processed-ids
+          path: scripts/processed_ids.json
+          retention-days: 30
+
+      - name: Upload valid creds
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: valid-creds
+          path: scripts/valid_creds/
+          retention-days: 30
+
+      - name: Upload refund queue
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: refund-queue
+          path: scripts/refund_queue/
+          retention-days: 30
