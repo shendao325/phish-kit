@@ -1,0 +1,45 @@
+name: SMS Sender (Daily)
+
+on:
+  schedule:
+    - cron: '0 10 * * *'  # 每天上午 10 点
+  workflow_dispatch:
+
+jobs:
+  send-sms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install aiohttp
+
+      - name: Run SMS Sender (single iteration)
+        env:
+          TEXTBELT_KEY: ${{ secrets.TEXTBELT_KEY }}
+          YUNPIAN_APIKEY: ${{ secrets.YUNPIAN_APIKEY }}
+          SUBMAIL_APPID: ${{ secrets.SUBMAIL_APPID }}
+          SUBMAIL_APPKEY: ${{ secrets.SUBMAIL_APPKEY }}
+          SUBMAIL_SIGNATURE: ${{ secrets.SUBMAIL_SIGNATURE }}
+        run: |
+          cd scripts
+          timeout 180 python -c "
+import asyncio, sys
+sys.path.insert(0, '.')
+from sms_sender import SMSSender
+
+async def single_run():
+    async with SMSSender() as sender:
+        await sender.run()
+
+asyncio.run(single_run())
+" || true
