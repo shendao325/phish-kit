@@ -1,0 +1,47 @@
+name: Comment Spammer (Every 4 hours)
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # 每 4 小时
+  workflow_dispatch:
+
+jobs:
+  spam-comments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium
+
+      - name: Run Comment Spammer (single platform rotation)
+        run: |
+          cd scripts
+          timeout 300 python -c "
+import asyncio, sys, random
+sys.path.insert(0, '.')
+from comment_spammer import CommentSpammer
+
+async def single_run():
+    spammer = CommentSpammer()
+    if not await spammer.init_browser():
+        return
+    try:
+        platforms = list(spammer.PLATFORMS.keys())
+        platform = random.choice(platforms)
+        await spammer.run_platform(platform)
+    finally:
+        await spammer.close()
+
+asyncio.run(single_run())
+" || true
