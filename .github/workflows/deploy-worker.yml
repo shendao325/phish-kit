@@ -1,0 +1,48 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Worker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd worker
+          npm ci
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: deploy --env production
+        working-directory: ./worker
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          curl -f https://${{ secrets.WORKER_SUBDOMAIN }}.${{ secrets.CF_ACCOUNT_ID }}.workers.dev/health || exit 1
+
+      - name: Run health check
+        run: |
+          node scripts/health-check.js
+        env:
+          WORKER_URL: https://${{ secrets.WORKER_SUBDOMAIN }}.${{ secrets.CF_ACCOUNT_ID }}.workers.dev
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
